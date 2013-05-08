@@ -1,0 +1,25 @@
+﻿@model Kooboo.CMS.Sites.Models.CacheSettings
+@Html.EditorFor(m => m.EnableCaching)
+@Html.EditorFor(m => m.Duration, new { HtmlAttributes = new { @class = "medium" } })
+@Html.EditorFor(m => m.ExpirationPolicy, new { HtmlAttributes = new { @class = "medium" } })
+<script>
+    $(function () {
+        var checkbox = $('#OutputCache_EnableCaching').click(function () {
+            var handle = $(this);
+            initChecked(handle);
+        });
+
+        function initChecked(handle) {
+            if (handle.attr('checked')) {
+                $('#OutputCache_Duration').attr('disabled', false);
+                $('#s2id_OutputCache_ExpirationPolicy').select2("enable");
+            } else {
+                $('#OutputCache_Duration').attr('disabled', true);
+                $('#s2id_OutputCache_ExpirationPolicy').select2("disable");
+            }
+        }
+
+        initChecked(checkbox);
+    });
+</script>
+

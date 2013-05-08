@@ -1,0 +1,154 @@
+﻿@model Kooboo.CMS.Sites.Models.Page
+@{
+    ViewBag.Title = ViewContext.RequestContext.GetRequestValue("title").Localize();
+    Layout = "~/Views/Shared/Blank.cshtml";
+}
+
+@section Panel{
+    <ul class="panel">
+
+        <li>
+            <a href="@ViewContext.RequestContext.GetRequestValue("return")">
+                @Html.IconImage("cancel") @("Back".Localize())</a>
+        </li>
+        <li><a href="@Url.Action("Revert", ViewContext.RequestContext.AllRouteValues())" data-ajax="Post" data-confirm="@("Are you sure you want to revert to this version?".Localize())">
+            @Html.IconImage("revert") @("Revert".Localize())</a></li>
+    </ul>
+}
+<div class="block common-form">
+
+    <h1 class="title">
+        @ViewBag.Title : <strong>@ViewContext.RequestContext.GetRequestValue("UUID") - @ViewContext.RequestContext.GetRequestValue("version")</strong></h1>
+
+    @using (Html.BeginForm("Edit", "Page", ViewContext.RequestContext.AllRouteValues(), FormMethod.Post, new RouteValueDictionary(new { id = "page-form" })))
+    { 
+        @Html.Hidden("SiteName", ViewContext.RequestContext.GetRequestValue("SiteName")) 
+        @Html.Hidden("ParentPage", ViewContext.RequestContext.GetRequestValue("ParentPage"))
+        @Html.Hidden("old_Key", Model.FullName)
+        @Html.ValidationSummary(true)
+        <div class="tabs">
+            <ul class="tab-index clearfix">
+                <li class="active"><a href="#basicInfo">
+                    @("Designer".Localize())</a></li>
+                <li><a href="#setting">
+                    @("Settings".Localize())</a></li>
+                <li><a href="#navigation">
+                    @("Navigation".Localize())</a></li>
+                <li><a href="#htmlmeta">
+                    @("HTML meta".Localize())</a></li>
+                <li class="hide"><a href="#permission">
+                    @("Permission".Localize())</a></li>
+                <li><a href="#route">
+                    @("URL route".Localize())</a></li>
+                @if (!string.IsNullOrEmpty(Kooboo.CMS.Sites.Models.Site.Current.Repository))
+                {
+                    <li><a href="#datarules">
+                        @("DataRules".Localize())</a></li>
+                }
+                <li><a href="#plugins">
+                    @("Plug-ins".Localize())</a></li>
+            </ul>
+            <div class="tab-content active" id="basicInfo">
+                @Html.Partial("PageDesign", false)
+            </div>
+            <div class="tab-content " id="setting">
+                <table>
+                    @Html.EditorFor(m => m.Layout, new { HtmlAttributes = new { @class = "medium" } })
+                    @Html.EditorFor(m => m.ContentTitle, new { HtmlAttributes = new { @class = "medium" } })
+                    @if (Model.Parent == null)
+                    {
+                        @Html.EditorFor(m => m.IsDefault)
+                    }
+                    @Html.EditorFor(m => m.EnableTheming)
+                    @Html.EditorFor(m => m.EnableScript)
+                    @Html.EditorFor(m => m.PageType)
+                    @Html.EditorFor(m => m.OutputCache)
+                    @Html.EditorFor(m => m.Searchable)
+                </table>
+            </div>
+            <div class="tab-content " id="navigation">
+                @Html.EditorFor(m => m.Navigation)
+            </div>
+            <div class="tab-content " id="htmlmeta">
+                @Html.EditorFor(m => m.HtmlMeta)
+            </div>
+            <div class="tab-content " id="permission">
+                @Html.EditorFor(m => m.Permission)
+            </div>
+            <div class="tab-content " id="route">
+                @Html.EditorFor(m => m.Route)
+            </div>
+            <div class="tab-content " id="datarules">
+                @if (!string.IsNullOrEmpty(Kooboo.CMS.Sites.Models.Site.Current.Repository))
+                {
+                    @Html.EditorFor(m => m.DataRules)
+                }
+            </div>
+            <div class="tab-content " id="plugins">
+                @Html.EditorFor(o => o.Plugins)
+            </div>
+        </div>
+    }
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('.tabs').koobooTab();
+
+        var enableScript = $('#EnableScript').change(function () {
+            var handler = $(this);
+            if (!handler.attr('checked')) {
+                enableJquery.attr('checked', false).attr('disabled', true);
+            } else {
+                enableJquery.removeAttr('disabled');
+            }
+        });
+
+        var enableJquery = $('#EnableJquery').change(function () {
+            var hanlder = $(this);
+            if (hanlder.attr('checked')) {
+                enableScript.attr('checked', true);
+            }
+        });
+
+        if (!enableScript.attr('checked')) {
+            enableJquery.attr('checked', false).attr('disabled', true);
+        } else {
+            enableJquery.removeAttr('disabled');
+        }
+
+    });
+
+    function onSuccess(responseData) {
+        if (responseData.Model && responseData.Model.preview == true) {
+            $.pop({
+                url: responseData.RedirectUrl,
+                width: $(window).width() - 20,
+                height: $(window).height() - 50,
+                frameHeight: "100%",
+                popupOnTop: true
+            });
+            return false;
+        }
+        return true;
+    }
+
+
+    $(function () {
+        $('div.command').remove();
+
+        $('#layout-edit').remove();
+
+        $('a.o-icon.remove,a.o-icon.csharp,a.o-icon.design,a.o-icon.add').remove();
+
+        $(':submit').remove();
+
+        $('input,select').attr('disabled', true);
+
+        window.pageDesignOnLoad(function () {
+            $('#iframeMask').show().css('background', 'none');
+        });
+
+    });
+
+</script>

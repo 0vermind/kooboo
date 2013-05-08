@@ -1,0 +1,9 @@
+﻿@model Kooboo.CMS.Sites.Models.Security
+<fieldset>
+    <table>
+        <tbody>
+            @Html.EditorFor(m => m.TurnOnSubmissionAPI)
+            @Html.EditorFor(m => m.EncryptKey, new { HtmlAttributes = new { @class = "medium" } })
+        </tbody>
+    </table>
+</fieldset>

@@ -1,0 +1,52 @@
+﻿@model dynamic
+@{
+    ViewBag.Title = "LargeFile".Localize();
+    Layout = "~/Areas/Contents/Views/Shared/Blank.cshtml";
+}
+@section ScriptCSS{
+    <link href="@Html.Raw(Url.Content("~/Styles/uploadify.css"))" rel="Stylesheet" />
+    <script language="javascript" type="text/javascript" src="@Html.Raw(Url.Content("~/Scripts/uploadify/swfobject.js"))"></script>
+    <script language="javascript" type="text/javascript" src="@Html.Raw(Url.Content("~/Scripts/uploadify/jquery.uploadify.v2.1.4.min.js"))"></script>
+    <script language="javascript" type="text/javascript">
+        $(function () {
+            var u = $('#LargeFile').uploadify({
+                'uploader': '@Html.Raw(Url.Content("~/Scripts/uploadify/uploadify.swf"))',
+                'script': '@Html.Raw(Url.Action("LargeFile",ViewContext.RequestContext.AllRouteValues()))',
+                'folder': '@Request["FolderName"]',
+                'cancelImg': '@Html.Raw(Url.Content("~/Scripts/uploadify/cancel.png"))',
+                'multi': true,
+                "sizeLimit": 30000000,
+                onAllComplete: function (event, data) {
+                    top.kooboo.data('large-file-changed', data.filesUploaded > 0);
+                },
+                scriptData: {
+                    folderName: '@Request["FolderName"]',
+                    siteName: '@Request["SiteName"]'
+                }
+            });
+
+            $('#upload-btn').click(function () {
+                var largeFile = $('#LargeFile');
+                largeFile.uploadifySettings("scriptData", {
+                    folderName: '@Request["FolderName"]',
+                    siteName: '@Request["SiteName"]',
+                    overrided: $('#Overrided').prop('checked')
+                });
+                largeFile.uploadifyUpload();
+            });
+        });
+    </script>
+    }
+    <form action="@Html.Raw(Url.Action("LargeFile",ViewContext.RequestContext.AllRouteValues()))">
+    <div style="height: 255px; overflow: scroll; margin-bottom: 10px;">
+        <input id="LargeFile" type="file" name="LargeFile" />
+    </div>
+    <div class="clearfix">
+        <input type="checkbox" value="True" name="Overrided" id="Overrided" />
+        <label for="Overrided">
+            @("Overrided".Localize())</label></div>
+    <p class="buttons">
+        <a  id="upload-btn" class="button">Upload</a>
+    </p>
+    </form>
+

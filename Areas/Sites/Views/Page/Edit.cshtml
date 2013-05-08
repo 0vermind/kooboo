@@ -1,0 +1,124 @@
+﻿@model Kooboo.CMS.Sites.Models.Page
+@{
+    ViewBag.Title = "Edit page".Localize();
+    Layout = "~/Views/Shared/Blank.cshtml";
+    var publishPermission = ServiceFactory.UserManager.Authorize(Kooboo.CMS.Sites.Models.Site.Current, ViewContext.HttpContext.User.Identity.Name, Kooboo.CMS.Account.Models.Permission.Sites_Page_PublishPermission); 
+}
+@section Panel{
+    <ul class="panel">
+        <li class="j_DropDown">
+            <a>
+                @Html.IconImage("save")
+                @Html.IconImage("arrow small white-down")
+                @("Save".Localize())
+            </a>
+            <ul class="j_DropDownContent hide">
+                @if (Model.Published.Value == false || (Model.Published.Value == true && publishPermission))
+                { 
+                    <li><a data-ajaxform="">@("Save".Localize())</a></li>                    
+                }
+                <li><a data-ajaxform="" href="@Url.Action("Save", "Page", ViewContext.RequestContext.AllRouteValues().Merge("saveAsDraft", "true"))">@("Save as draft".Localize())</a></li>
+                @if (Model.Published.Value == false && publishPermission)
+                {  
+                    <li><a data-ajaxform="" href="@Url.Action("Save", "Page", ViewContext.RequestContext.AllRouteValues().Merge("setPublished", "true"))">@("Save & publish".Localize())</a></li>
+                }
+            </ul>
+        </li>
+
+        <li><a href="@FrontUrlHelper.Preview(Url, Kooboo.CMS.Sites.Models.Site.Current, Model, null)" target="_blank">@Html.IconImage("preview") @("Preview".Localize())</a></li>
+        <li><a href="@ViewContext.RequestContext.GetRequestValue("return")">@Html.IconImage("cancel") @("Back".Localize())</a></li>
+    </ul>
+}
+<div class="block common-form">
+    <h1 class="title">@ViewBag.Title : <strong>@ViewContext.RequestContext.GetRequestValue("UUID")</strong></h1>
+    @using (Html.BeginForm("Save", "Page", ViewContext.RequestContext.AllRouteValues()))
+    { 
+        @Html.Hidden("SiteName", ViewContext.RequestContext.GetRequestValue("SiteName"))
+        @Html.Hidden("ParentPage", Model.Parent == null ? "" : Model.Parent.FullName)
+        @Html.Hidden("old_Key", Model.FullName)
+        <input type="hidden" value="@Model.Name" name="Name" />
+        @Html.HiddenFor(m => m.Published)
+        @Html.ValidationSummary(true)
+        <div class="tabs">
+            <ul class="tab-index clearfix">
+                <li class="active"><a href="#basicInfo">
+                    @("Designer".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                <li><a href="#setting">
+                    @("Settings".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                <li><a href="#navigation">
+                    @("Navigation".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                <li><a href="#htmlmeta">
+                    @("HTML meta".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                <li class="hide"><a href="#permission">
+                    @("Permission".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                <li><a href="#route">
+                    @("URL route".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                @if (!string.IsNullOrEmpty(Kooboo.CMS.Sites.Models.Site.Current.Repository))
+                {
+                    <li><a href="#datarules">
+                        @("DataRules".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                }
+                <li><a href="#plugins">
+                    @("Plug-ins".Localize())</a>@Html.IconImage("arrow blue-down")</li>
+                @foreach (var tab in Kooboo.CMS.Web.Areas.Sites.PageCustomTabs.Tabs(Model.Layout))
+                {
+                    <li><a href="#@Html.Raw(tab.Title)">
+                        @tab.Title.Localize()</a>@Html.IconImage("arrow blue-down")</li>
+                }
+            </ul>
+            <div class="tab-content active" id="basicInfo">
+                @Html.Partial("PageDesign", false)
+            </div>
+            <div class="tab-content" id="setting">
+                <table>
+                    @Html.EditorFor(m => m.Layout, new { HtmlAttributes = new { @class = "medium" } })
+                    @Html.EditorFor(m => m.ContentTitle, new { HtmlAttributes = new { @class = "medium" } })
+                    @if (Model.Parent == null)
+                    {
+                        @Html.EditorFor(m => m.IsDefault)
+                    }
+                    @Html.EditorFor(m => m.EnableTheming)
+                    @Html.EditorFor(m => m.EnableScript)
+                    @Html.EditorFor(m => m.PageType)
+                    @Html.EditorFor(m => m.OutputCache)
+                    @Html.EditorFor(m => m.Searchable)
+                </table>
+
+            </div>
+            <div class="tab-content" id="navigation">
+                @Html.EditorFor(m => m.Navigation)
+            </div>
+            <div class="tab-content" id="htmlmeta">
+                @Html.EditorFor(m => m.HtmlMeta)
+            </div>
+            <div class="tab-content" id="permission">
+                @Html.EditorFor(m => m.Permission)
+            </div>
+            <div class="tab-content" id="route">
+                @Html.EditorFor(m => m.Route)
+            </div>
+            <div class="tab-content" id="datarules">
+                @if (!string.IsNullOrEmpty(Kooboo.CMS.Sites.Models.Site.Current.Repository))
+                {
+                    @Html.EditorFor(m => m.DataRules)
+                }
+            </div>
+            <div class="tab-content" id="plugins">
+                @Html.EditorFor(o => o.Plugins)
+            </div>
+            @foreach (var tab in Kooboo.CMS.Web.Areas.Sites.PageCustomTabs.Tabs(Model.Layout))
+            {
+                <div class="tab-content " id="@Html.Raw(tab.Title)">
+                    @Html.Partial(tab.VirualPath, Model.CustomFields, new ViewDataDictionary())
+                </div>
+            }
+        </div>        
+    }
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+        $('.tabs').koobooTab();
+    });
+</script>
